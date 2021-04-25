@@ -9,8 +9,9 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.title = "Picture Puzzle";
-		config.width = 800;
-		config.height = 480;
+		config.width = 400;
+		config.height = 600;
 		new LwjglApplication(new MyPuzzleGame(), config);
 	}
 }
+//we want 400x400 square
