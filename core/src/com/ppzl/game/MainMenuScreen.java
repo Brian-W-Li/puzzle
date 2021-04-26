@@ -3,34 +3,69 @@ package com.ppzl.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class MainMenuScreen implements Screen {
 
     final MyPuzzleGame game;
-    TextButton button1;
-    TextButton button2;
-    TextButton button3;
-    OrthographicCamera camera;
 
+
+    OrthographicCamera camera;
+    Table table;
+    Array<TextButton> buttons;
+    Array<ImageButton> imageButtons;
+    Array<Texture> imageTextures;
+    Array<TextureRegionDrawable> imageDrawables;
     public MainMenuScreen(final MyPuzzleGame agame) {
         this.game = agame;
-        button1 = new TextButton("Click me!", game.skin, "default");
-        button2 = new TextButton("Click me!", game.skin, "default");
-        button3 = new TextButton("Click me!", game.skin, "default");
-        button1.setWidth(140);
-        button1.setHeight(140);
-        button1.setX(50);
-        button1.setY(300);
-        button2.setWidth(140+300);
-        button2.setHeight(140);
-        button2.setX(50);
-        button2.setY(200);
-        button3.setWidth(140+300+300);
-        button3.setHeight(140);
-        button3.setX(50);
-        button3.setY(100);
+        imageButtons = new Array<ImageButton>();
+        buttons = new Array<TextButton>();
+        imageTextures = new Array<>();
+        imageDrawables = new Array<>();
+
+        buttons.add(new TextButton("Easy", game.skin, "small"));
+        buttons.add(new TextButton("Medium", game.skin, "small"));
+        buttons.add(new TextButton("Impossible", game.skin, "small"));
+
+        imageTextures.add(new Texture(Gdx.files.internal("Projectpicture1.jpg")));
+        imageTextures.add(new Texture(Gdx.files.internal("Projectpicture2.jpg")));
+        imageTextures.add(new Texture(Gdx.files.internal("Projectpicture3.jpg")));
+
+        for(Texture texture:imageTextures) {
+            TextureRegionDrawable regionDrawable = new TextureRegionDrawable(texture);
+            TextureRegionDrawable regionDrawablex = new TextureRegionDrawable(texture);
+            regionDrawable.setMinSize(200, 200);
+            regionDrawablex.setMinSize(160, 160);
+            imageDrawables.add(regionDrawable);
+            imageDrawables.add(regionDrawablex);
+            //to make a drawable from textures
+            imageButtons.add(new ImageButton(regionDrawable));
+            imageButtons.add(new ImageButton(regionDrawablex));
+        }
+
+        table = new Table();
+        for(TextButton button: buttons){
+            table.add(button);
+           // button.setSize(50, 50);
+        }
+
+        table.row();
+        for(ImageButton imageButton : imageButtons){
+            table.add(imageButton);
+
+           // imageButton.setSize(50, 50);
+        }
+
+        table.setSize(100, 100);
+        table.setPosition(350, 300);
+
+
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
     }
@@ -45,9 +80,10 @@ public class MainMenuScreen implements Screen {
         game.batch.begin();
         game.font.draw(game.batch, "Welcome to Drop!!! ", 100, 150);
         game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
-        button1.draw(game.batch, 1f);
+        table.draw(game.batch, 1f);
+       /* button1.draw(game.batch, 1f);
         button2.draw(game.batch, 1f);
-        button3.draw(game.batch, 1f);
+        button3.draw(game.batch, 1f);*/
         game.batch.end();
 
         if (Gdx.input.isTouched()) {

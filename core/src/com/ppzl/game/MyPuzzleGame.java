@@ -20,8 +20,8 @@ public class MyPuzzleGame extends Game {
         batch = new SpriteBatch();
 
 
-        TextureAtlas atlas = new TextureAtlas("metal/skin/metal-ui.atlas");
-        skin = new Skin(Gdx.files.internal("metal/skin/metal-ui.json"));
+        //TextureAtlas atlas = new TextureAtlas("metal/skin/metal-ui.atlas");
+        skin = new Skin(Gdx.files.internal("glassy/skin/glassy-ui.json"));
         //BitmapFont font = skin.getFont("font");
         //FileHandle fh = Gdx.files.internal("metal/skin/font-export.fnt");
         font = skin.getFont("font");
