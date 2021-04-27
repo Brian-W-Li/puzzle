@@ -32,10 +32,13 @@ public class PlayGameScreen implements Screen {
 	private Vector3 touchPos;
 	private Array<Rectangle> raindrops;
 	private long lastDropTime;
+	private String imagePath;
+	private String buttonText;
 
-	public PlayGameScreen(final MyPuzzleGame agame) {
+	public PlayGameScreen(final MyPuzzleGame agame, String imagePath, String buttonText) {
 		this.game = agame;
-
+		this.imagePath = imagePath;
+		this.buttonText = buttonText;
 
 		// load the images for the droplet and the bucket, 64x64 pixels each
 		FileHandle gg = Gdx.files.internal("droplet.png");
@@ -70,35 +73,16 @@ public class PlayGameScreen implements Screen {
 	public void render (float delta) {
 		ScreenUtils.clear(0, 0, 0.2f, 1);
 
-		if(TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
-		for (Iterator<Rectangle> iter = raindrops.iterator(); iter.hasNext(); ) {
-			Rectangle raindrop = iter.next();
-			raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-			if(raindrop.y + 64 < 0) iter.remove();
-			if(raindrop.overlaps(bucket)) {
-				dropSound.play();
-				iter.remove();
-			}
-		}
 
-		camera.update();
 
-		game.batch.setProjectionMatrix(camera.combined);
+
+
 		game.batch.begin();
-		game.batch.draw(bucketImage, bucket.x, bucket.y);
-		for(Rectangle raindrop: raindrops) {
-			game.batch.draw(dropImage, raindrop.x, raindrop.y);
-		}
-		game.batch.end();
-		if(Gdx.input.isTouched()) {
+		game.font.draw(game.batch, this.imagePath, 315, 550);
+		game.font.draw(game.batch, this.buttonText, 315, 650);
 
-			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			camera.unproject(touchPos);
-			bucket.x = touchPos.x - 64 / 2;
-			
-			if(bucket.x < 0) bucket.x = 0;
-			if(bucket.x > 800 - 64) bucket.x = 800 - 64;
-		}
+		game.batch.end();
+
 	}
 	
 	@Override

@@ -4,6 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -15,56 +20,85 @@ public class MainMenuScreen implements Screen {
 
     final MyPuzzleGame game;
 
-
+private Stage stage;
     OrthographicCamera camera;
     Table table;
     Array<TextButton> buttons;
     Array<ImageButton> imageButtons;
     Array<Texture> imageTextures;
     Array<TextureRegionDrawable> imageDrawables;
+    ButtonGroup buttonGroup;
     public MainMenuScreen(final MyPuzzleGame agame) {
         this.game = agame;
-        imageButtons = new Array<ImageButton>();
-        buttons = new Array<TextButton>();
+        imageButtons = new Array<>();
+        buttons = new Array<>();
         imageTextures = new Array<>();
         imageDrawables = new Array<>();
+        stage = new Stage();
+        buttonGroup = new ButtonGroup();
+        stage.clear();
+        Gdx.input.setInputProcessor(stage);
 
         buttons.add(new TextButton("Easy", game.skin, "small"));
         buttons.add(new TextButton("Medium", game.skin, "small"));
         buttons.add(new TextButton("Impossible", game.skin, "small"));
+        for(TextButton button: buttons){
+            final String buttonText = button.getText().toString();
+            button.addListener(new InputListener() {
+                public boolean touchDown (InputEvent event, float x, float y, int pointer, int buttonn) {
+//to be continued waiting for image button
+                    Button checked = buttonGroup.getChecked();
+                    if(checked != null){
+                        String nameOfImage = checked.getName();
+                        game.setScreen(new PlayGameScreen(game, nameOfImage, buttonText));
+                        dispose();
+                    }
 
-        imageTextures.add(new Texture(Gdx.files.internal("Projectpicture1.jpg")));
-        imageTextures.add(new Texture(Gdx.files.internal("Projectpicture2.jpg")));
-        imageTextures.add(new Texture(Gdx.files.internal("Projectpicture3.jpg")));
 
-        for(Texture texture:imageTextures) {
-            TextureRegionDrawable regionDrawable = new TextureRegionDrawable(texture);
-            TextureRegionDrawable regionDrawablex = new TextureRegionDrawable(texture);
-            regionDrawable.setMinSize(200, 200);
-            regionDrawablex.setMinSize(160, 160);
-            imageDrawables.add(regionDrawable);
-            imageDrawables.add(regionDrawablex);
-            //to make a drawable from textures
-            imageButtons.add(new ImageButton(regionDrawable));
-            imageButtons.add(new ImageButton(regionDrawablex));
+
+                    return true;
+                }
+            });
         }
+
+
+
+        for(int i = 1; i<=3; i++) {
+            Texture texture = new Texture(Gdx.files.internal("Projectpicture"+ i + ".jpg"));
+            imageTextures.add(texture);
+
+            TextureRegionDrawable regionDrawableUp = new TextureRegionDrawable(texture);
+            TextureRegionDrawable regionDrawableDown = new TextureRegionDrawable(texture);
+            regionDrawableUp.setMinSize(200, 200);
+            regionDrawableDown.setMinSize(180, 180);
+            imageDrawables.add(regionDrawableUp);
+            //imageDrawables.add(regionDrawablex);
+            //to make a drawable from textures
+            ImageButton imageButton = new ImageButton(regionDrawableUp, regionDrawableDown, regionDrawableDown);
+            imageButton.setName("Projectpicture"+ i + ".jpg");
+
+            imageButtons.add(imageButton);
+            buttonGroup.add(imageButton);
+
+        }
+buttonGroup.setMinCheckCount(0);
 
         table = new Table();
         for(TextButton button: buttons){
             table.add(button);
-           // button.setSize(50, 50);
+
         }
 
         table.row();
         for(ImageButton imageButton : imageButtons){
             table.add(imageButton);
 
-           // imageButton.setSize(50, 50);
+
         }
 
         table.setSize(100, 100);
         table.setPosition(350, 300);
-
+        stage.addActor(table); //added table to the stage so all buttons can take input and output
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
@@ -73,23 +107,15 @@ public class MainMenuScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0.2f, 1);
+        stage.act();
 
-        camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-        game.font.draw(game.batch, "Welcome to Drop!!! ", 100, 150);
-        game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
-        table.draw(game.batch, 1f);
-       /* button1.draw(game.batch, 1f);
-        button2.draw(game.batch, 1f);
-        button3.draw(game.batch, 1f);*/
-        game.batch.end();
+        game.font.draw(game.batch, "Choose a level!!! ", 315, 550);
+        game.font.draw(game.batch, "Select a picture!!!", 315, 650);
+        stage.draw();
 
-        if (Gdx.input.isTouched()) {
-            game.setScreen(new PlayGameScreen(game));
-            dispose();
-        }
+        game.batch.end();
 
     }
     @Override
