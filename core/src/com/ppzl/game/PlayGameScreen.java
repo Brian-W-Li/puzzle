@@ -10,9 +10,16 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -22,53 +29,78 @@ import java.util.Iterator;
 public class PlayGameScreen implements Screen {
 	final MyPuzzleGame game;
 
-	private Texture dropImage;
-	private Texture bucketImage;
-	private Sound dropSound;
-	private Music rainMusic;
-	//private SpriteBatch batch;
-	private OrthographicCamera camera;
-	private Rectangle bucket;
-	private Vector3 touchPos;
-	private Array<Rectangle> raindrops;
-	private long lastDropTime;
+	private Stage stage;
 	private String imagePath;
-	private String buttonText;
+	private String level;
+	Table table;
+	ButtonGroup buttonGroup;
+	Texture texture;
+	Array<PuzzlePiece> piecesArray;
+	int levelNum;
 
-	public PlayGameScreen(final MyPuzzleGame agame, String imagePath, String buttonText) {
+	public PlayGameScreen(final MyPuzzleGame agame, String imagePath, String level) {
 		this.game = agame;
 		this.imagePath = imagePath;
-		this.buttonText = buttonText;
-
-		// load the images for the droplet and the bucket, 64x64 pixels each
-		FileHandle gg = Gdx.files.internal("droplet.png");
-		dropImage = new Texture(gg);
-		bucketImage = new Texture(Gdx.files.internal("bucket.png"));
-
-		// load the drop sound effect and the rain background "music"
-		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
-		rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
-
-		// start the playback of the background music immediately
-		rainMusic.setLooping(true);
+		this.level = level;
 
 
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 480);
+		stage = new Stage();
+		Gdx.input.setInputProcessor(stage);
 
-		float x = 800 / 2 - 64 / 2;
-		float y = 20;
-		float width = 64;
-		float height = 64;
-		bucket = new Rectangle(x, y, width, height);
+		buttonGroup = new ButtonGroup();
+		buttonGroup.setMinCheckCount(0);
 
-		touchPos = new Vector3();
+		texture = new Texture(Gdx.files.internal(this.imagePath));
 
-		raindrops = new Array<Rectangle>();
-		spawnRaindrop();
-		// ... more to come ...
+
+
+		piecesArray = createPieces(level, texture);
+
+		table = new Table();
+		for(PuzzlePiece onepiece : piecesArray){
+			table.add(onepiece);
+			if(onepiece.getId()%levelNum == levelNum - 1){
+				table.row();
+			}
+			buttonGroup.add(onepiece);
+		}
+
+
+		table.setSize(100, 100);
+		table.setPosition(350, 300);
+
+		stage.addActor(table); //added table to the stage so all buttons can take input and output
+
+
 	}
 
+	private Array<PuzzlePiece> createPieces(String level, Texture texture){
+		Array<PuzzlePiece> puzzleArray = new Array<>();
+		if(level.equals("Easy")){
+			levelNum = 2;
+		} else if(level.equals("Medium")){
+			levelNum = 3;
+		} else if(level.equals("Impossible")){
+			levelNum = 4;
+		}
+		int width = texture.getWidth()/levelNum;
+		int height = texture.getHeight()/levelNum;
+		for(int id = 0; id<levelNum*levelNum; id++){
+			int rowNum = id/levelNum;
+			int collumnNum = id%levelNum;
+			int x = collumnNum*width;
+			int y = rowNum*height;
+
+			TextureRegion textureregion = new TextureRegion(texture, x, y, width, height);
+			TextureRegionDrawable regionDrawableUp = new TextureRegionDrawable(textureregion);
+			TextureRegionDrawable regionDrawableDown = new TextureRegionDrawable(textureregion);
+			regionDrawableUp.setMinSize(200, 200);
+			regionDrawableDown.setMinSize(180, 180);
+			PuzzlePiece piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableDown, regionDrawableDown);
+			puzzleArray.add(piece);
+		}
+		return(puzzleArray);
+	}
 	@Override
 	public void render (float delta) {
 		ScreenUtils.clear(0, 0, 0.2f, 1);
@@ -79,39 +111,27 @@ public class PlayGameScreen implements Screen {
 
 		game.batch.begin();
 		game.font.draw(game.batch, this.imagePath, 315, 550);
-		game.font.draw(game.batch, this.buttonText, 315, 650);
-
+		game.font.draw(game.batch, this.level, 315, 650);
+		stage.draw();
 		game.batch.end();
 
 	}
 	
 	@Override
 	public void dispose () {
-		dropImage.dispose();
+		/*dropImage.dispose();
 		bucketImage.dispose();
 		dropSound.dispose();
-		rainMusic.dispose();
+		rainMusic.dispose();*/
 	}
 
-	private void spawnRaindrop() {
-		Rectangle raindrop = new Rectangle();
-		raindrop.x = MathUtils.random(0, 800-64);
-		raindrop.y = 480;
-		raindrop.width = 64;
-		raindrop.height = 64;
-		raindrops.add(raindrop);
-		lastDropTime = TimeUtils.nanoTime();
-
-	}
 	@Override
 	public void resize(int width, int height) {
 	}
 
 	@Override
 	public void show() {
-		// start the playback of the background music
-		// when the screen is shown
-		rainMusic.play();
+
 	}
 
 	@Override

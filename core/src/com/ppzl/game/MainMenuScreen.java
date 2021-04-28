@@ -20,20 +20,17 @@ public class MainMenuScreen implements Screen {
 
     final MyPuzzleGame game;
 
-private Stage stage;
+    private Stage stage;
     OrthographicCamera camera;
     Table table;
     Array<TextButton> buttons;
     Array<ImageButton> imageButtons;
-    Array<Texture> imageTextures;
-    Array<TextureRegionDrawable> imageDrawables;
     ButtonGroup buttonGroup;
     public MainMenuScreen(final MyPuzzleGame agame) {
         this.game = agame;
         imageButtons = new Array<>();
         buttons = new Array<>();
-        imageTextures = new Array<>();
-        imageDrawables = new Array<>();
+
         stage = new Stage();
         buttonGroup = new ButtonGroup();
         stage.clear();
@@ -46,54 +43,41 @@ private Stage stage;
             final String buttonText = button.getText().toString();
             button.addListener(new InputListener() {
                 public boolean touchDown (InputEvent event, float x, float y, int pointer, int buttonn) {
-//to be continued waiting for image button
                     Button checked = buttonGroup.getChecked();
                     if(checked != null){
                         String nameOfImage = checked.getName();
                         game.setScreen(new PlayGameScreen(game, nameOfImage, buttonText));
                         dispose();
                     }
-
-
-
                     return true;
                 }
             });
         }
 
-
-
         for(int i = 1; i<=3; i++) {
-            Texture texture = new Texture(Gdx.files.internal("Projectpicture"+ i + ".jpg"));
-            imageTextures.add(texture);
+            Texture texture = new Texture(Gdx.files.internal("Projectpicture" + i + ".jpg"));
 
             TextureRegionDrawable regionDrawableUp = new TextureRegionDrawable(texture);
             TextureRegionDrawable regionDrawableDown = new TextureRegionDrawable(texture);
             regionDrawableUp.setMinSize(200, 200);
             regionDrawableDown.setMinSize(180, 180);
-            imageDrawables.add(regionDrawableUp);
-            //imageDrawables.add(regionDrawablex);
-            //to make a drawable from textures
+
             ImageButton imageButton = new ImageButton(regionDrawableUp, regionDrawableDown, regionDrawableDown);
-            imageButton.setName("Projectpicture"+ i + ".jpg");
+            imageButton.setName("Projectpicture" + i + ".jpg");
 
             imageButtons.add(imageButton);
             buttonGroup.add(imageButton);
-
         }
-buttonGroup.setMinCheckCount(0);
+        //buttonGroup.setMinCheckCount(0);
 
         table = new Table();
         for(TextButton button: buttons){
             table.add(button);
-
         }
 
         table.row();
         for(ImageButton imageButton : imageButtons){
             table.add(imageButton);
-
-
         }
 
         table.setSize(100, 100);
@@ -109,23 +93,21 @@ buttonGroup.setMinCheckCount(0);
         ScreenUtils.clear(0, 0, 0.2f, 1);
         stage.act();
 
-
         game.batch.begin();
         game.font.draw(game.batch, "Choose a level!!! ", 315, 550);
         game.font.draw(game.batch, "Select a picture!!!", 315, 650);
         stage.draw();
 
         game.batch.end();
-
     }
     @Override
     public void show() {
-
     }
+
     @Override
     public void resize(int width, int height) {
     }
-    //...Rest of class omitted for succinctness.
+
     @Override
     public void hide() {
     }
@@ -137,7 +119,7 @@ buttonGroup.setMinCheckCount(0);
     @Override
     public void resume() {
     }
-    public void dispose () {
 
+    public void dispose () {
     }
 }

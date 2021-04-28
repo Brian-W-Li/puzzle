@@ -16,6 +16,7 @@ public class MyPuzzleGame extends Game {
     public BitmapFont font;
     public Skin skin;
 
+
     public void create() {
         batch = new SpriteBatch();
 
