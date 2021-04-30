@@ -1,55 +1,44 @@
 package com.ppzl.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 
 public class PlayGameScreen implements Screen {
 	final MyPuzzleGame game;
 
 	private Stage stage;
-	private String imagePath;
-	private String level;
-	Table table;
-	ButtonGroup buttonGroup;
-	Texture texture;
-	ArrayList<PuzzlePiece> piecesArray;
-	int levelNum;
-	TextButton home;
+	private Table table;
+	private ButtonGroup buttonGroup;
+	private ArrayList<PuzzlePiece> piecesArray;
+	private int levelNum;
+	//This button helps you go back to the main screen
+	private TextButton home;
+	private boolean win;
+	//the sound that plays when a piece is in the right place
+	private Sound ding;
 
-	public PlayGameScreen(final MyPuzzleGame agame, String imagePath, String level) {
-		this.game = agame;
-		this.imagePath = imagePath;
-		this.level = level;
+	public PlayGameScreen(final MyPuzzleGame game, String imagePath, String level) {
+		this.game = game;
 
+		ding = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
+		//creates button to go back to main screen
 		home = new TextButton("Home", game.skin, "small");
+		home.setSize(50, 50);
+		home.setPosition(0, 750);
 		home.addListener(new InputListener() {
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int buttonn) {
 				game.setScreen(new MainMenuScreen(game));
@@ -58,42 +47,92 @@ public class PlayGameScreen implements Screen {
 			}
 		});
 
+		//Stage listens to all inputs
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
 		stage.addActor(home);
-		home.setSize(50, 50);
-		home.setPosition(0, 750);
+
+		//to enforce that you can only select one piece
 		buttonGroup = new ButtonGroup();
 		buttonGroup.setMinCheckCount(0);
 
-		texture = new Texture(Gdx.files.internal(this.imagePath));
-
-
-
+		//cuts the picture into small pieces
+		Texture texture = new Texture(Gdx.files.internal(imagePath));
 		piecesArray = createPieces(level, texture);
 
-
-		//for(PuzzlePiece onepiece : piecesArray){
-
+		//puts puzzle pieces into slots
 		for(int i = 0; i<piecesArray.size(); i++) {
-			PuzzlePiece onepiece = piecesArray.get(i);
-
-			onepiece.setSlotId(i);
-
-			buttonGroup.add(onepiece);
+			PuzzlePiece onePiece = piecesArray.get(i);
+			onePiece.setSlotId(i);
+			buttonGroup.add(onePiece);
 		}
+	}
 
+	private PuzzlePiece createOnePiece(int id, int width, int height, Texture texture){
+		//to calculate location and size
+		int rowNum = id/levelNum;
+		int collumnNum = id%levelNum;
+		int x = collumnNum*width;
+		int y = rowNum*height;
 
+		//creates the piece
+		TextureRegion textureregion = new TextureRegion(texture, x, y, width, height);
+		TextureRegionDrawable regionDrawableUp = new TextureRegionDrawable(textureregion);
+		TextureRegionDrawable regionDrawableDown = new TextureRegionDrawable(textureregion);
+		regionDrawableUp.setMinSize(150, 150);
+		regionDrawableDown.setMinSize(130, 130);
+		PuzzlePiece piece;
+		if(id>=levelNum*levelNum){
+			//empty piece
+			piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableUp, regionDrawableUp);
+			final PuzzlePiece emptyPiece = piece;
+			//adds actions to swap empty piece and picture piece
+			piece.addListener(new InputListener() {
+				public boolean touchDown (InputEvent event, float x, float y, int pointer, int buttonn) {
+					PuzzlePiece checked = (PuzzlePiece)buttonGroup.getChecked();
+					if(checked != null){
+						int pictureId = checked.getId();
+						int pictureSlotId = checked.getSlotId();
+						int emptySlotId = emptyPiece.getSlotId();
+						checked.setSlotId(emptySlotId);
+						emptyPiece.setSlotId(pictureSlotId);
+						piecesArray.set(emptySlotId, checked);
+						piecesArray.set(pictureSlotId, emptyPiece);
+						//this signifies when picture pieces reach where its supposed to be
+						if(pictureId == emptySlotId){
+							ding.play();
+						}
 
+						//defines when you win
+						win = true;
+						for(int i = 0; i<levelNum*levelNum; i++){
+							PuzzlePiece onepiece = piecesArray.get(i);
+							if(onepiece.getId() != onepiece.getSlotId()){
+								win = false;
+							}
+						}
 
-
-
-
-
+						//defines what happens when you win
+						if(win){
+							home.setSize(100,100);
+							home.setPosition(350, 350);
+							home.setText("You Win!");
+						}
+					}
+					return true;
+				}
+			});
+		} else{
+			//picture piece
+			piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableDown, regionDrawableDown);
+		}
+		return piece;
 	}
 
 	private ArrayList<PuzzlePiece> createPieces(String level, Texture texture){
 		ArrayList<PuzzlePiece> puzzleArray = new ArrayList<>();
+
+		//Defines the level name
 		if(level.equals("Easy")){
 			levelNum = 2;
 		} else if(level.equals("Medium")){
@@ -101,103 +140,67 @@ public class PlayGameScreen implements Screen {
 		} else if(level.equals("Impossible")){
 			levelNum = 4;
 		}
+
+		//calculates piece size
 		int width = texture.getWidth()/levelNum;
 		int height = texture.getHeight()/levelNum;
-		for(int id = 0; id<levelNum*levelNum; id++){
-			int rowNum = id/levelNum;
-			int collumnNum = id%levelNum;
-			int x = collumnNum*width;
-			int y = rowNum*height;
 
-			TextureRegion textureregion = new TextureRegion(texture, x, y, width, height);
-			TextureRegionDrawable regionDrawableUp = new TextureRegionDrawable(textureregion);
-			TextureRegionDrawable regionDrawableDown = new TextureRegionDrawable(textureregion);
-			regionDrawableUp.setMinSize(150, 150);
-			regionDrawableDown.setMinSize(130, 130);//IMPORTANT
-			PuzzlePiece piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableDown, regionDrawableDown);
+		//creats all picture pieces and adds it to the array
+		for(int id = 0; id<levelNum*levelNum; id++){
+			PuzzlePiece piece = createOnePiece(id, width, height, texture);
 			puzzleArray.add(piece);
 		}
+
+		//shuffles the picture pieces
 		Collections.shuffle(puzzleArray);
+
+		//creats empty pieces
 		Texture background = new Texture(Gdx.files.internal("background.jpeg"));
 		for(int id = levelNum*levelNum; id<levelNum*levelNum+levelNum; id++) {
-			int rowNum = id/levelNum;
-			int collumnNum = id%levelNum;
-			int x = collumnNum*width;
-			int y = rowNum*height;
-
-			TextureRegion textureregion = new TextureRegion(background, x, y, width, height);
-			TextureRegionDrawable regionDrawableUp = new TextureRegionDrawable(textureregion);
-			regionDrawableUp.setMinSize(150, 150);
-			PuzzlePiece piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableUp, regionDrawableUp);
-
-			final PuzzlePiece finalPiece = piece;
-			piece.addListener(new InputListener() {
-				public boolean touchDown (InputEvent event, float x, float y, int pointer, int buttonn) {
-					PuzzlePiece checked = (PuzzlePiece)buttonGroup.getChecked();
-					if(checked != null){
-						int pictureId = checked.getId();
-						int pictureSlotId = checked.getSlotId();
-						int emptyId = finalPiece.getId();
-						int emptySlotId = finalPiece.getSlotId();
-						checked.setSlotId(emptySlotId);
-						finalPiece.setSlotId(pictureSlotId);
-						piecesArray.set(emptySlotId, checked);
-						piecesArray.set(pictureSlotId, finalPiece);
-						boolean win = true;
-						for(int i = 0; i<levelNum*levelNum; i++){
-							PuzzlePiece onepiece = piecesArray.get(i);
-							if(onepiece.getId() == onepiece.getSlotId()){
-
-							}
-							else{
-								win = false;
-							}
-						}
-						if(win){
-						home.setSize(100,100);
-						home.setPosition(350, 350);
-						}
-					}
-					return true;
-				}
-			});
-
+			PuzzlePiece piece = createOnePiece(id, width, height, background);
 			puzzleArray.add(piece);
 		}
-
-
 		return(puzzleArray);
 	}
+
 	@Override
 	public void render (float delta) {
 		ScreenUtils.clear(0, 0, 0.2f, 1);
+
+		//I use Table to organize the pieces
 		table = new Table();
 
 		for(int i = 0; i<piecesArray.size(); i++) {
-			PuzzlePiece onepiece = piecesArray.get(i);
-			table.add(onepiece);
-			if(onepiece.getSlotId()%levelNum == levelNum - 1){
+			PuzzlePiece onePiece = piecesArray.get(i);
+			table.add(onePiece);
+			if(onePiece.getSlotId()%levelNum == levelNum - 1){
 				table.row();
+			}
+
+			//don't add empty pieces when we win
+			if(win && i==levelNum*levelNum-1){
+				break;
 			}
 		}
 
+		if(win){
+			table.add(home).colspan(levelNum);
+			stage.addActor(home);
+		} else{
+			stage.addActor(table);
+		}
 		table.setPosition(350, 400);
-		stage.addActor(table); //added table to the stage so all buttons can take input and output
-
 
 		game.batch.begin();
-		stage.draw();
+		table.draw(game.batch, 1);
 		home.draw(game.batch, 1);
 		game.batch.end();
-
 	}
 	
 	@Override
 	public void dispose () {
-		/*dropImage.dispose();
-		bucketImage.dispose();
-		dropSound.dispose();
-		rainMusic.dispose();*/
+		stage.dispose();
+		ding.dispose();
 	}
 
 	@Override
