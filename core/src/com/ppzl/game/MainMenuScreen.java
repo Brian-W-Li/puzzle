@@ -68,7 +68,7 @@ public class MainMenuScreen implements Screen {
             imageButtons.add(imageButton);
             buttonGroup.add(imageButton);
         }
-        //buttonGroup.setMinCheckCount(0);
+
 
         table = new Table();
         for(TextButton button: buttons){
@@ -76,6 +76,7 @@ public class MainMenuScreen implements Screen {
         }
 
         table.row();
+
         for(ImageButton imageButton : imageButtons){
             table.add(imageButton);
         }

@@ -23,6 +23,7 @@ public class PlayGameScreen implements Screen {
 	private Stage stage;
 	private Table table;
 	private ButtonGroup buttonGroup;
+	//3bi
 	private ArrayList<PuzzlePiece> piecesArray;
 	private int levelNum;
 	//This button helps you go back to the main screen
@@ -68,6 +69,19 @@ public class PlayGameScreen implements Screen {
 		}
 	}
 
+	private void swapPiece(PuzzlePiece checked, PuzzlePiece emptyPiece){
+		int pictureId = checked.getId();
+		int pictureSlotId = checked.getSlotId();
+		int emptySlotId = emptyPiece.getSlotId();
+		checked.setSlotId(emptySlotId);
+		emptyPiece.setSlotId(pictureSlotId);
+		piecesArray.set(emptySlotId, checked);
+		piecesArray.set(pictureSlotId, emptyPiece);
+		//this signifies when picture pieces reach where its supposed to be
+		if(pictureId == emptySlotId){
+			ding.play();
+		}
+	}
 	private PuzzlePiece createOnePiece(int id, int width, int height, Texture texture){
 		//to calculate location and size
 		int rowNum = id/levelNum;
@@ -81,27 +95,16 @@ public class PlayGameScreen implements Screen {
 		TextureRegionDrawable regionDrawableDown = new TextureRegionDrawable(textureregion);
 		regionDrawableUp.setMinSize(150, 150);
 		regionDrawableDown.setMinSize(130, 130);
-		PuzzlePiece piece;
+		final PuzzlePiece piece;
+		//if its an empty piece...
 		if(id>=levelNum*levelNum){
-			//empty piece
 			piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableUp, regionDrawableUp);
-			final PuzzlePiece emptyPiece = piece;
 			//adds actions to swap empty piece and picture piece
 			piece.addListener(new InputListener() {
 				public boolean touchDown (InputEvent event, float x, float y, int pointer, int buttonn) {
 					PuzzlePiece checked = (PuzzlePiece)buttonGroup.getChecked();
 					if(checked != null){
-						int pictureId = checked.getId();
-						int pictureSlotId = checked.getSlotId();
-						int emptySlotId = emptyPiece.getSlotId();
-						checked.setSlotId(emptySlotId);
-						emptyPiece.setSlotId(pictureSlotId);
-						piecesArray.set(emptySlotId, checked);
-						piecesArray.set(pictureSlotId, emptyPiece);
-						//this signifies when picture pieces reach where its supposed to be
-						if(pictureId == emptySlotId){
-							ding.play();
-						}
+						swapPiece(checked, piece);
 
 						//defines when you win
 						win = true;
@@ -111,19 +114,12 @@ public class PlayGameScreen implements Screen {
 								win = false;
 							}
 						}
-
-						//defines what happens when you win
-						if(win){
-							home.setSize(100,100);
-							home.setPosition(350, 350);
-							home.setText("You Win!");
-						}
 					}
 					return true;
 				}
 			});
 		} else{
-			//picture piece
+			//if its a picture piece
 			piece = new PuzzlePiece(id, regionDrawableUp, regionDrawableDown, regionDrawableDown);
 		}
 		return piece;
@@ -145,7 +141,7 @@ public class PlayGameScreen implements Screen {
 		int width = texture.getWidth()/levelNum;
 		int height = texture.getHeight()/levelNum;
 
-		//creats all picture pieces and adds it to the array
+		//creates all picture pieces and adds it to the array
 		for(int id = 0; id<levelNum*levelNum; id++){
 			PuzzlePiece piece = createOnePiece(id, width, height, texture);
 			puzzleArray.add(piece);
@@ -154,7 +150,7 @@ public class PlayGameScreen implements Screen {
 		//shuffles the picture pieces
 		Collections.shuffle(puzzleArray);
 
-		//creats empty pieces
+		//creates empty pieces
 		Texture background = new Texture(Gdx.files.internal("background.jpeg"));
 		for(int id = levelNum*levelNum; id<levelNum*levelNum+levelNum; id++) {
 			PuzzlePiece piece = createOnePiece(id, width, height, background);
@@ -166,9 +162,16 @@ public class PlayGameScreen implements Screen {
 	@Override
 	public void render (float delta) {
 		ScreenUtils.clear(0, 0, 0.2f, 1);
-
+		//3bv
 		//I use Table to organize the pieces
 		table = new Table();
+
+		//defines what happens when you win
+		if(win){
+			home.setSize(100,100);
+			home.setPosition(350, 350);
+			home.setText("You Win!");
+		}
 
 		for(int i = 0; i<piecesArray.size(); i++) {
 			PuzzlePiece onePiece = piecesArray.get(i);
