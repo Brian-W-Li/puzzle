@@ -142,20 +142,24 @@ public class PlayGameScreen implements Screen {
 		int height = texture.getHeight()/levelNum;
 
 		//creates all picture pieces and adds it to the array
-		for(int id = 0; id<levelNum*levelNum; id++){
-			PuzzlePiece piece = createOnePiece(id, width, height, texture);
-			puzzleArray.add(piece);
-		}
-
-		//shuffles the picture pieces
-		Collections.shuffle(puzzleArray);
-
-		//creates empty pieces
 		Texture background = new Texture(Gdx.files.internal("background.jpeg"));
-		for(int id = levelNum*levelNum; id<levelNum*levelNum+levelNum; id++) {
-			PuzzlePiece piece = createOnePiece(id, width, height, background);
-			puzzleArray.add(piece);
+		for(int id = 0; id<levelNum*levelNum+levelNum; id++){
+			if(id == levelNum*levelNum){
+				//shuffles the picture pieces
+				Collections.shuffle(puzzleArray);
+			}
+			if(id<levelNum*levelNum){
+				//picturePiece
+				PuzzlePiece piece = createOnePiece(id, width, height, texture);
+				puzzleArray.add(piece);
+			}
+			else{
+				//create emptyPiece
+				PuzzlePiece piece = createOnePiece(id, width, height, background);
+				puzzleArray.add(piece);
+			}
 		}
+
 		return(puzzleArray);
 	}
 
