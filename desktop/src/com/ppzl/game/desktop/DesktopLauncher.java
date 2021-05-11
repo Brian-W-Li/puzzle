@@ -14,4 +14,3 @@ public class DesktopLauncher {
 		new LwjglApplication(new MyPuzzleGame(), config);
 	}
 }
-//we want 400x400 square

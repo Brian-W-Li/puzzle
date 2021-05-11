@@ -1,10 +1,8 @@
 package com.ppzl.game;
 
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.utils.Null;
-
+//it represents once puzzle piece which is an image button. It can be assigned to a slot.
 public class PuzzlePiece extends ImageButton {
     final private int id;
     private int slotId = -1;
