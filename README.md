@@ -1,10 +1,10 @@
 # Puzzle Game References
 My game is a puzzle game.  
 I programmed with  Badgame LibGdx at https://libgdx.com/
-It is a java game platform. LibGdx generates the initial project framework, the libraries, build, gradle, etc.
-Thank you LibGdx!!!
+It is a Java game platform. LibGdx generates the initial project framework, the libraries, build, Gradle, etc.
+Thank you, LibGdx!!!
 
-The pikachu picture comes from https://cdn2.bulbagarden.net/upload/0/0d/025Pikachu.png
+The Pikachu picture comes from https://cdn2.bulbagarden.net/upload/0/0d/025Pikachu.png
 
 The skin for buttons comes from https://github.com/czyzby/gdx-skins/tree/master/glassy
 
@@ -14,5 +14,5 @@ The blank picture comes from https://www.vectorstock.com/royalty-free-vector/squ
 
 The drop sound comes from https://freesound.org/people/junggle/sounds/30341/
 
-I appreciate the all the effort from the owners of these resources.
-I appreciate google for the useful searches.
+I appreciate all the effort from the owners of these resources.
+I appreciate Google for the useful searches.
